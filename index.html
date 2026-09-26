@@ -97,17 +97,27 @@
       return `${heading('Add a note','Add a personal note to your journey.',true)}<form class="card form" id="entry-form" data-kind="note"><label>Note<textarea name="text" maxlength="400" required></textarea></label><button class="primary" type="submit">Save note</button><p class="helper">Stored only in this browser.</p></form>`
     }
     function parseLabelText(text){
-      const lines=text.split(/\r?\n/).map(line=>line.replace(/[|]/g,'I').replace(/\s+/g,' ').trim()).filter(line=>line.length>2);
-      const noise=/\b(patient|pharmacy|street|address|keep out|reach of children|expiry|expires|batch|lot no|prescription only|date dispensed|store below|discard after)\b/i;
+      const lines=text.split(/\r?\n/).map(line=>line.replace(/[|¦]/g,' ').replace(/\s+/g,' ').trim()).filter(line=>line.length>2);
+      const safetyNoise=/\b(patient|pharmacy|street|address|keep out|reach of children|expiry|expires|batch|lot no|prescription only|date dispensed|store below|discard after)\b/i;
+      const uiWords=/\b(?:add a medicine|scan(?: the)? pharmacy label|scan label|search medicine|find and add manually|enter barcode|my drops|your medicines|home|learn|journey|settings|current medicines|past medicines|medicine name|add to my medicines|choose how to add your medicine|take or choose a label photo|frequency|form|directions on the label)\b/gi;
       const strengthPattern=/\d+(?:[.,]\d+)?\s*(?:mg\s*\/\s*ml|mcg\s*\/\s*ml|µg\s*\/\s*ml|%|mg|mcg|µg|g)/i;
-      const product=lines.find(line=>strengthPattern.test(line)&&!noise.test(line))||lines.find(line=>/[a-z]{3}/i.test(line)&&!noise.test(line)&&!/^(put|take|apply|instil|instill|use)\b/i.test(line))||'';
+      const cleanLine=line=>line.replace(uiWords,' ').replace(safetyNoise,' ').replace(/[^a-z0-9µ%./+ -]/gi,' ').replace(/\s+/g,' ').trim();
+      const productCandidates=lines.filter(line=>strengthPattern.test(line)&&!safetyNoise.test(line)).map(line=>{let clean=cleanLine(line);const instructionAt=clean.search(/\b(?:put|take|apply|instil|instill|use|one|two|\d+)\s+(?:one\s+)?(?:drops?|tablets?|capsules?)\b/i);if(instructionAt>0)clean=clean.slice(0,instructionAt).trim();const longCaps=(clean.match(/\b[A-Z]{7,}\b/g)||[]).length;const oddRuns=(clean.match(/\b(?:[A-Za-z]{2,4}\s+){3,}[A-Za-z]{2,4}\b/g)||[]).length;return {line:clean,score:24-Math.abs(clean.length-24)*.08-longCaps*7-oddRuns*3-(clean.length>60?12:0)}}).filter(c=>strengthPattern.test(c.line)).sort((a,b)=>b.score-a.score);
+      const product=productCandidates[0]?.line||lines.map(cleanLine).find(line=>/[a-z]{3}/i.test(line)&&line.length<70)||'';
       const strength=product.match(strengthPattern)?.[0]?.replace(/\s+/g,' ')||'';
       const name=product.replace(strengthPattern,'').replace(/\b\d+(?:[.,]\d+)?\s*(?:ml|mL)\b/i,'').replace(/^[^a-z0-9]+|[^a-z0-9]+$/gi,'').trim();
       const type=/\b(eye drops?|ophthalmic)\b|\bdrops?\s+in\s+(?:each|both|the)\s+eyes?\b/i.test(text)?'Eye drops':/\btablets?\b/i.test(text)?'Tablets':/\bcapsules?\b/i.test(text)?'Capsules':'Medicine';
-      const directionStart=lines.findIndex(line=>/^(put|take|apply|instil|instill|use|one|two|three|four|\d+)\b/i.test(line)&&/(drop|tablet|capsule|eye|daily|day|mouth|times)/i.test(line)||/\b(?:once|twice|three|four) times (?:a|per) day\b/i.test(line));
-      const directionLines=directionStart<0?[]:lines.slice(directionStart,directionStart+3).filter(line=>!noise.test(line)&&!/^mrs?\b/i.test(line));
-      const dose=directionLines.join(' ').replace(/\s+/g,' ').slice(0,140);
-      const times=[...new Set(text.match(/\b(?:[01]?\d|2[0-3]):[0-5]\d\b/g)||[])].join(', ');
+      const clinical=lines.map(line=>cleanLine(line)).filter(line=>line&&!/^\d{1,2}:\d{2}(?:\s+\d{1,2}:\d{2})*$/.test(line));
+      const actionPattern=/\b(?:put|take|apply|instil|instill|use)\b/i,amountPattern=/\b(?:one|two|three|four|\d+)\s*(?:drops?|tablets?|capsules?)\b/i;
+      const actionLine=clinical.find(line=>actionPattern.test(line)&&amountPattern.test(line));
+      const amountLine=clinical.find(line=>amountPattern.test(line)&&/\b(?:eye|mouth|daily|day|times|both|each|once|twice)\b/i.test(line));
+      const frequencyPattern=/\b(?:once|twice|(?:three|four|[1-4]) times)(?:\s+(?:a|per) day|\s+daily)?\b/i;
+      const frequencyLine=clinical.map(line=>line.match(frequencyPattern)?.[0]).find(Boolean)||'';
+      let directive='';
+      if(actionLine){const match=actionLine.match(/\b(?:put|take|apply|instil|instill|use)\b.{0,100}/i);directive=match?.[0]?.trim()||''}
+      else if(amountLine){const match=amountLine.match(/\b(?:one|two|three|four|\d+)\s*(?:drops?|tablets?|capsules?)\b.{0,70}/i);directive=match?.[0]?.trim()||''}
+      let dose=[directive,frequencyLine&&!directive.toLowerCase().includes(frequencyLine.toLowerCase())?frequencyLine:''].filter(Boolean).join(' ').replace(/\s+/g,' ').slice(0,140);
+      const times=[...new Set(lines.filter(line=>/(?:put|take|apply|instil|instill|drop|tablet|daily|schedule|\bat\b)/i.test(line)&&!safetyNoise.test(line)).flatMap(line=>line.match(/\b(?:[01]?\d|2[0-3]):[0-5]\d\b/g)||[]))].join(', ');
       return {name,ingredient:strength,type,dose,times,text};
     }
     function loadOcrEngine(){
