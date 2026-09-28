@@ -16,11 +16,9 @@ My Drops 是我们团队参加 **Moorfields Hackday 2026** 的项目。活动于
 
 本项目仅用于演示和信息辅助。用药时请遵循处方标签，并咨询医生或药师。
 
-## Project roles / 项目角色
+## Project team / 项目组成员
 
 - [@zhenhuahe2025](https://github.com/zhenhuahe2025) — Project code lead / 项目代码负责人
-
-## Collaborators / 合作者
-
-- [@adensiu](https://github.com/adensiu) — Collaborator / 合作者
-- [@CTS3970](https://github.com/CTS3970) — Collaborator / 合作者
+- [@yessica77](https://github.com/yessica77) — Project group leader / 项目组组长
+- [@adensiu](https://github.com/adensiu) — Collaborator / 项目合作者
+- [@CTS3970](https://github.com/CTS3970) — Collaborator / 项目合作者
