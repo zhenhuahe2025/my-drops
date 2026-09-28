@@ -15,3 +15,9 @@ This prototype is for demonstration and information support only. Always follow 
 My Drops 是我们团队参加 **Moorfields Hackday 2026** 的项目。活动于 **2026 年 9 月 26 日至 27 日在伦敦举行**。这个优先适配手机的原型可以帮助用户扫描处方标签、查看眼科药物信息，并整理用药日程与治疗历程。
 
 本项目仅用于演示和信息辅助。用药时请遵循处方标签，并咨询医生或药师。
+
+## Team / 团队
+
+- [@zhenhuahe2025](https://github.com/zhenhuahe2025) — Project owner / 项目负责人
+- [@adensiu](https://github.com/adensiu) — Collaborator / 合作者
+- [@CTS3970](https://github.com/CTS3970) — Collaborator / 合作者
