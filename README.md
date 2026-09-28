@@ -18,7 +18,7 @@ My Drops 是我们团队参加 **Moorfields Hackday 2026** 的项目。活动于
 
 ## Project team / 项目组成员
 
-- [@zhenhuahe2025](https://github.com/zhenhuahe2025) — Project code lead / 项目代码负责人
 - [@yessica77](https://github.com/yessica77) — Project group leader / 项目组组长
+- [@zhenhuahe2025](https://github.com/zhenhuahe2025) — Project code lead / 项目代码负责人
 - [@adensiu](https://github.com/adensiu) — Collaborator / 项目合作者
 - [@CTS3970](https://github.com/CTS3970) — Collaborator / 项目合作者
